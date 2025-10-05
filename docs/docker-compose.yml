@@ -1,0 +1,126 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: logline
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: logline
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  logline-rules:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: logline-rules
+        SERVICE_PORT: 8081
+    environment:
+      RUST_LOG: info
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8081"
+
+  logline-timeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: logline-timeline
+        SERVICE_PORT: 8082
+    environment:
+      RUST_LOG: info
+      TIMELINE_DATABASE_URL: postgres://logline:password@postgres:5432/logline
+    depends_on:
+      - postgres
+    ports:
+      - "8082:8082"
+
+  logline-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: logline-engine
+        SERVICE_PORT: 8090
+    environment:
+      RUST_LOG: info
+      RULES_URL: http://logline-rules:8081
+      TIMELINE_WS_URL: ws://logline-timeline:8082/ws/service
+    depends_on:
+      - redis
+      - logline-rules
+      - logline-timeline
+    ports:
+      - "8090:8090"
+    develop:
+      watch:
+        - action: sync
+          path: ./logline-engine
+          target: /app/logline-engine
+        - action: rebuild
+          path: ./logline-engine/Cargo.toml
+
+  logline-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: logline-gateway
+        SERVICE_PORT: 8070
+    environment:
+      RUST_LOG: info
+      GATEWAY_BIND: 0.0.0.0:8070
+      ENGINE_URL: http://logline-engine:8090
+      RULES_URL: http://logline-rules:8081
+      TIMELINE_URL: http://logline-timeline:8082
+      ID_URL: http://logline-id:8083
+      FEDERATION_URL: http://logline-federation:8084
+      GATEWAY_JWT_SECRET: supersecret
+      GATEWAY_JWT_ISSUER: logline-id
+      GATEWAY_JWT_AUDIENCE: logline
+      GATEWAY_ALLOWED_ORIGINS: "*"
+      GATEWAY_PUBLIC_PATHS: /healthz
+    depends_on:
+      - logline-engine
+      - logline-rules
+      - logline-timeline
+    ports:
+      - "8070:8070"
+
+  logline-id:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: logline-id
+        SERVICE_PORT: 8083
+    environment:
+      RUST_LOG: info
+    ports:
+      - "8083:8083"
+
+  logline-federation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: logline-federation
+        SERVICE_PORT: 8084
+    environment:
+      RUST_LOG: info
+    ports:
+      - "8084:8084"
+
+volumes:
+  pgdata:
