@@ -1,0 +1,25 @@
+[package]
+name = "logline-engine"
+version = "0.1.0"
+edition = "2021"
+authors = ["LogLine Team"]
+description = "Task scheduler and execution runtime for the LogLine platform"
+license = "MIT"
+
+[dependencies]
+async-trait = "0.1"
+axum = { version = "0.7", features = ["macros", "json"] }
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+futures = "0.3"
+parking_lot = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tokio = { version = "1.34", features = ["rt", "macros", "sync", "time"] }
+tracing = "0.1"
+uuid = { version = "1.6", features = ["serde", "v4"] }
+logline-core = { path = "../logline-core" }
+logline-protocol = { path = "../logline-protocol" }
+reqwest = { version = "0.11", features = ["json"] }
+url = "2.4"

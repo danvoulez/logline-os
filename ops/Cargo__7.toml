@@ -1,0 +1,26 @@
+[package]
+name = "logline-rules"
+version = "0.1.0"
+edition = "2021"
+description = "Rules engine and enforcement primitives for the LogLine ecosystem"
+license = "MIT"
+authors = ["LogLine Team"]
+
+[dependencies]
+axum = { version = "0.7", features = ["macros", "json"] }
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+futures = "0.3"
+parking_lot = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+thiserror = "1.0"
+tokio = { version = "1.34", features = ["rt", "macros", "sync", "time"] }
+tracing = "0.1"
+uuid = { version = "1.6", features = ["serde", "v4"] }
+
+logline-protocol = { path = "../logline-protocol" }
+logline-core = { path = "../logline-core" }
+url = "2.4"
+async-trait = "0.1"
