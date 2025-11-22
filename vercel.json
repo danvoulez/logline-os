@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": null,
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/v1/cron/check-alerts",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/v1/cron/cleanup-audit",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/v1/cron/cleanup-alert-history",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/v1/cron/cleanup-rate-limits",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
+
